@@ -1,5 +1,3 @@
-# SparkTreeInterpreter
-
 ===============================
 Spark Tree Interpreter (Scala/Spark port of https://github.com/andosa/treeinterpreter)
 ===============================
