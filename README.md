@@ -2,7 +2,7 @@
 Spark Tree Interpreter (Scala & MLlib port of https://github.com/andosa/treeinterpreter)
 ===============================
 
-This is a Scala & MLlib port of https://github.com/andosa/treeinterpreter:
+This is a Scala & MLlib port of https://github.com/andosa/treeinterpreter.
 
 Free software: BSD license
 
