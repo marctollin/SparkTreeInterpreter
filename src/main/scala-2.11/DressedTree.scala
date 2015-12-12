@@ -6,7 +6,6 @@ import org.apache.spark.mllib.linalg.Vector
 import org.apache.spark.mllib.tree.model.{RandomForestModel, DecisionTreeModel, Node}
 import org.apache.spark.mllib.tree.configuration.Algo._
 
-
 case class DressedTree(model: DecisionTreeModel, bias: Double, contributionMap: NodeContributions) {
 
   implicit def nodeType(node: Node) = model.algo match {
@@ -25,7 +24,6 @@ case class DressedTree(model: DecisionTreeModel, bias: Double, contributionMap: 
 
   def interpret(point: Vector) = predictLeaf(point)
 }
-
 
 object DressedTree {
 
@@ -60,9 +58,7 @@ object DressedTree {
         buildRight ++ buildLeft
       }
     }
-
     val paths = buildPath(Array(), topNode)
-
     val contributions: NodeContributions = paths.map(_.sorted.reverse).flatMap(path => {
 
       val contribMap = {
@@ -75,28 +71,9 @@ object DressedTree {
             })
         }
       }.foldLeft(Map[Feature, Double]())(_ + _)
-
       val leafID = path.head.NodeID
       Map(leafID -> contribMap)
     }).toMap
-
     DressedTree(model, bias, contributions)
   }
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
