@@ -1,18 +1,28 @@
 package treeinterpreter
 
-import DressedTree.{Feature}
+
+
 import com.twitter.algebird
-import DressedTree._
 import com.twitter.algebird.Monoid
 import com.twitter.algebird.Operators._
 import org.apache.spark.mllib.regression.LabeledPoint
-import org.apache.spark.mllib.tree.model.{RandomForestModel, DecisionTreeModel, Node}
+import org.apache.spark.mllib.tree.model.{DecisionTreeModel, RandomForestModel}
 import org.apache.spark.rdd.RDD
+import treeinterpreter.DressedTree.Feature
+import treeinterpreter.utils.toJsonString
 
 
-case class Interp(bias: Double, prediction: Double, contributions: Map[Feature, Double], treeCount: Double=1.0,checksum: Double = 0.0)
-
-
+case class Interp(bias: Double, prediction: Double, contributions: Map[Feature, Double], treeCount: Double=1.0,checksum: Double = 0.0) {
+  override def toString() = {
+    s"""
+   | bias:${bias}
+   | prediction:${prediction}
+   | contributionMap ${contributions}
+   | sumOfTerms: ${checksum}
+""".
+      stripMargin
+}
+  }
 object Interp {
 
   class InterpMonoid extends Monoid[Interp] {

@@ -1,11 +1,12 @@
 package treeinterpreter
 
-import org.apache.spark.mllib.linalg.Vector
-import org.apache.spark.mllib.tree.model.Node
-import org.apache.spark.mllib.tree.configuration.FeatureType._
-import org.apache.spark.mllib.tree.configuration.Algo._
 
-object TreeInterpreter {
+
+import org.apache.spark.mllib.linalg.Vector
+import org.apache.spark.mllib.tree.configuration.FeatureType._
+import org.apache.spark.mllib.tree.model.Node
+
+object TreeNode {
 
   type NodeID = Int
   type NodeMap = Map[NodeID, Double]
@@ -57,11 +58,11 @@ object TreeInterpreter {
   }
 
   case class ClassificationNode(node: Node) extends TreeNode(node: Node) {
-    override def value: Double = node.predict.prob + .00000001 //because algebird MapMonoid discards 0 values
+    override def value: Double = node.predict.prob + .00001//because algebird MapMonoid discards 0 values
   }
 
   case class RegressionNode(node: Node) extends TreeNode(node: Node) {
-    override def value: Double = node.predict.predict + .00000001 //because algebird MapMonoid discards 0 values
+    override def value: Double = node.predict.predict
   }
 
 }

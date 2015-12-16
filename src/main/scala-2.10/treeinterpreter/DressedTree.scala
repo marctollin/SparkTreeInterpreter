@@ -1,10 +1,10 @@
 package treeinterpreter
 
-import treeinterpreter.TreeInterpreter._
-import DressedTree._
 import org.apache.spark.mllib.linalg.Vector
-import org.apache.spark.mllib.tree.model.{RandomForestModel, DecisionTreeModel, Node}
 import org.apache.spark.mllib.tree.configuration.Algo._
+import org.apache.spark.mllib.tree.model.{DecisionTreeModel, Node}
+import treeinterpreter.DressedTree._
+import treeinterpreter.TreeNode._
 
 
 case class DressedTree(model: DecisionTreeModel, bias: Double, contributionMap: NodeContributions) {
@@ -61,17 +61,17 @@ object DressedTree {
       }
     }
 
-    val paths = buildPath(Array(), topNode)
+    val paths = buildPath(Array(), topNode).map(_.sorted.reverse)
+    DressedTree.arrayprint(paths)
 
-    val contributions: NodeContributions = paths.map(_.sorted.reverse).flatMap(path => {
+    val contributions: NodeContributions = paths.flatMap(path => {
 
       val contribMap = {
-        {
-          path zip path.tail
+        {path zip path.tail
         }.flatMap {
           case (currentNode, prevNode) =>
             Map(prevNode.feature -> {
-              currentNode.value - prevNode.value
+              currentNode.value -prevNode.value
             })
         }
       }.foldLeft(Map[Feature, Double]())(_ + _)
