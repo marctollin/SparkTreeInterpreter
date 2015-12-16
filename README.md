@@ -10,9 +10,6 @@ Dependencies
 ------------
 Spark 1.4.1+
 
-Installation
-------------
-TBD
 
 Usage and Tests
 -----
@@ -31,4 +28,5 @@ yields
 
 The sum of bias and feature contributions should equal the prediction, but due to floating point arithmetic they will be slightly off.
 
+To run tests, just run `sbt test` .
 
