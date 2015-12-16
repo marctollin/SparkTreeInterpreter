@@ -16,8 +16,11 @@ TBD
 
 Usage and Tests
 -----
-Given RandomForestModel or DecisionTreeModel and data set trainingData
-`Interp.interpretModel(model, trainingData)`
+Given a trained RandomForestModel/DecisionTreeModel and an RDD[LabeledPoint], we have
+
+```
+Interp.interpretModel(model, trainingData)
+```
 yields
 ```
  bias:22.05948146469634
