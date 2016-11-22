@@ -4,7 +4,7 @@ import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.tree.RandomForest
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfterAll, FunSuite, Suite}
-import treeinterpreter.{DressedTree, Interp}
+import treeinterpreter.Interp
 
 class InterpTest extends FunSuite with SharedSparkContext {
   test("Random Forest Regression Test") {

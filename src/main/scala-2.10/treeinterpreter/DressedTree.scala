@@ -6,17 +6,16 @@ import org.apache.spark.mllib.tree.model.{DecisionTreeModel, Node}
 import treeinterpreter.DressedTree._
 import treeinterpreter.TreeNode._
 
-
 case class DressedTree(model: DecisionTreeModel, bias: Double, contributionMap: NodeContributions) {
 
-  implicit def nodeType(node: Node) = model.algo match {
+  implicit def nodeType(node: Node): TreeNode = model.algo match {
     case Classification => ClassificationNode(node)
     case Regression => RegressionNode(node)
   }
 
   private def predictLeafID(features: Vector): NodeID = model.topNode.predictLeaf(features)
 
-  def predictLeaf(point: Vector) = {
+  def predictLeaf(point: Vector): Interp = {
     val leaf = predictLeafID(point)
     val prediction = model.predict(point)
     val contribution = contributionMap(leaf)
@@ -33,12 +32,12 @@ object DressedTree {
 
   type NodeContributions = Map[NodeID, Map[Feature, Double]]
 
-  def arrayprint[A](x: Array[A]) = println(x.deep.mkString("\n"))
+  def arrayprint[A](x: Array[A]): Unit = println(x.deep.mkString("\n"))
 
-  def trainInterpreter(model: DecisionTreeModel) = {
+  def trainInterpreter(model: DecisionTreeModel): DressedTree = {
     val topNode = model.topNode
 
-    implicit def nodeType(node: Node) = model.algo match {
+    implicit def nodeType(node: Node): TreeNode = model.algo match {
       case Classification => ClassificationNode(node)
       case Regression => RegressionNode(node)
     }
