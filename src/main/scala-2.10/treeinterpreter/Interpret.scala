@@ -1,7 +1,5 @@
 package treeinterpreter
 
-
-
 import com.twitter.algebird
 import com.twitter.algebird.Monoid
 import com.twitter.algebird.Operators._
@@ -9,20 +7,17 @@ import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.tree.model.{DecisionTreeModel, RandomForestModel}
 import org.apache.spark.rdd.RDD
 import treeinterpreter.DressedTree.Feature
-import treeinterpreter.utils.toJsonString
 
-
-case class Interp(bias: Double, prediction: Double, contributions: Map[Feature, Double], treeCount: Double=1.0,checksum: Double = 0.0) {
-  override def toString() = {
+case class Interp(bias: Double, prediction: Double, contributions: Map[Feature, Double], treeCount: Double = 1.0, checksum: Double = 0.0) {
+  override def toString(): String = {
     s"""
-   | bias:${bias}
-   | prediction:${prediction}
-   | contributionMap ${contributions}
-   | sumOfTerms: ${checksum}
-""".
-      stripMargin
-}
+   | bias: $bias
+   | prediction: $prediction
+   | contributionMap $contributions
+   | sumOfTerms: $checksum""".stripMargin
   }
+}
+
 object Interp {
 
   class InterpMonoid extends Monoid[Interp] {
@@ -37,8 +32,7 @@ object Interp {
 
   implicit def InterpMonoidImpl: algebird.Monoid[Interp] = new InterpMonoid
 
-
-  def interpretModel(rf: RandomForestModel, testSet: RDD[LabeledPoint]) = {
+  def interpretModel(rf: RandomForestModel, testSet: RDD[LabeledPoint]): RDD[Interp] = {
     val trees = rf.trees.map(tree => DressedTree.trainInterpreter(tree))
 
     val result = testSet.map(lp => {
