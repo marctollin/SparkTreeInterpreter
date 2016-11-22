@@ -1,0 +1,11 @@
+
+target
+out
+/.idea/workspace.xml
+/.idea/vcs.xml
+/.idea/libraries
+/.idea/artifacts
+/.idea/modules/sparktreeinterpreter.iml
+/.idea/modules/sparktreeinterpreter-build.iml
+/.idea/misc.xml
+/.idea/compiler.xml
