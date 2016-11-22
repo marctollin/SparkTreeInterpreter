@@ -1,7 +1,5 @@
 package treeinterpreter
 
-
-
 import org.apache.spark.mllib.linalg.Vector
 import org.apache.spark.mllib.tree.configuration.FeatureType._
 import org.apache.spark.mllib.tree.model.Node
@@ -10,7 +8,6 @@ object TreeNode {
 
   type NodeID = Int
   type NodeMap = Map[NodeID, Double]
-
 
   trait SimplifiedNode {
     def NodeID: NodeID
@@ -22,17 +19,16 @@ object TreeNode {
     def feature: Option[Int]
   }
 
-
   abstract class TreeNode(node: Node) extends SimplifiedNode with Ordered[TreeNode] {
     import node._
 
-    override def toString() = Array(id, value, feature).mkString("||", ",", "||")
+    override def toString(): String = Array(id, value, feature).mkString("||", ",", "||")
 
     def compare(that: TreeNode) =  this.NodeID compare that.NodeID
 
-    val NodeID = id
+    val NodeID: Int = id
 
-    val feature = split.map(_.feature)
+    val feature: Option[Int] = split.map(_.feature)
 
     def value: Double
 
@@ -58,11 +54,10 @@ object TreeNode {
   }
 
   case class ClassificationNode(node: Node) extends TreeNode(node: Node) {
-    override def value: Double = node.predict.prob + .00001//because algebird MapMonoid discards 0 values
+    override def value: Double = node.predict.prob + .00001 // because algebird MapMonoid discards 0 values
   }
 
   case class RegressionNode(node: Node) extends TreeNode(node: Node) {
     override def value: Double = node.predict.predict
   }
-
 }
