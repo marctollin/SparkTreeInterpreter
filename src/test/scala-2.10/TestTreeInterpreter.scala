@@ -41,18 +41,15 @@ class InterpTest extends FunSuite with SharedSparkContext {
           (point.label, prediction)
         }
 
-    val testMSE = math.sqrt(labelsAndPredictions.map { case (v, p) => math.pow((v - p), 2) }.mean())
+    val testMSE = math.sqrt(labelsAndPredictions.map { case (v, p) => math.pow(v - p, 2) }.mean())
 
     println("Test Mean Squared Error = " + testMSE)
-
-
 
     val interpRDD = Interp.interpretModel(rf, trainingData)
 
     interpRDD.collect().foreach(println)
 
     interpRDD.collect().foreach(item=> assert(scala.math.abs(item.checksum/item.prediction-1)<.2))
-
   }
 }
 
@@ -61,9 +58,7 @@ trait SharedSparkContext extends BeforeAndAfterAll {
 
   @transient private var _sc: SparkContext = _
 
-
   implicit def sc: SparkContext = _sc
-
 
   val conf = new SparkConf().setMaster("local[*]")
     .setAppName("test")
