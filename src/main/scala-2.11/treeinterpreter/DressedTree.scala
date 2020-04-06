@@ -57,13 +57,13 @@ object DressedTree {
     var Paths: PathBundle = Array()
 
     def buildPath(paths: Path, node: Node): PathBundle = {
-      val TreeNode = nodeType(node)
+      val treeNode = nodeType(node)
       node match {
         case node: LeafNode =>
-          Array(paths :+ TreeNode)
+          Array(paths :+ treeNode)
         case node: InternalNode =>
-          val buildRight = buildPath(paths :+ TreeNode, node.rightChild)
-          val buildLeft = buildPath(paths :+ TreeNode, node.leftChild)
+          val buildRight = buildPath(paths :+ treeNode, node.rightChild)
+          val buildLeft = buildPath(paths :+ treeNode, node.leftChild)
           buildRight ++ buildLeft
       }
     }
@@ -82,7 +82,7 @@ object DressedTree {
         }
         .foldLeft(Map.empty[Feature, Double])(_ + _)
 
-      val leafID = path.head.NodeID
+      val leafID = path.head.nodeID
       Map(leafID -> contribMap)
     }).toMap
 

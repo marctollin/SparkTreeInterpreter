@@ -4,17 +4,14 @@ import com.twitter.algebird
 import com.twitter.algebird.Monoid
 import com.twitter.algebird.Operators._
 import org.apache.spark.ml.tree.{DecisionTreeModel, TreeEnsembleModel}
-import org.apache.spark.ml.classification.RandomForestClassificationModel
 import org.apache.spark.ml.PredictionModel
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.Dataset
 import org.apache.spark.ml.PredictorParams
-import org.apache.spark.ml.linalg.Vectors
 import org.apache.spark.ml.treeinterpreter.DressedTree._
 import org.apache.spark.sql.{functions => F}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.Row
-import org.apache.spark.ml.regression.RandomForestRegressionModel
 import org.apache.spark.ml.linalg.DenseVector
 
 
@@ -49,18 +46,18 @@ object Interp {
 
   def interpretModelTf[M <: TreeEnsembleModel[_ <: DecisionTreeModel with PredictionModel[Vector, _]] with PredictorParams](
                      spark: SparkSession,
-                     rf: M,
+                     model: M,
                      testSet: Dataset[Row]): Dataset[Interp] = {
     import spark.implicits._
-    val trees = rf.trees.map(tree => DressedTree.trainInterpreter(tree))
+    val trees = model.trees.map(tree => DressedTree.trainInterpreter(tree))
 
     val result = testSet
-      .select(F.col(rf.getFeaturesCol).as("features"))
+      .select(F.col(model.getFeaturesCol))
       .map { row =>
-        val vec = row.getAs[DenseVector]("features")
+        val vec = row.getAs[DenseVector](model.getFeaturesCol)
         trees.map {
           case dressedTree =>
-          dressedTree.interpret(vec)
+            dressedTree.interpret(vec)
         }
       }
 
@@ -86,9 +83,9 @@ object Interp {
     import spark.implicits._
     val dressedTree = DressedTree.trainInterpreter(model)
     testSet
-    .select(F.col(model.getFeaturesCol).as("features"))
+    .select(F.col(model.getFeaturesCol))
     .map { row =>
-      val vec = Vectors.dense(row.getAs[Array[Double]]("features"))
+      val vec = row.getAs[DenseVector](model.getFeaturesCol)
       dressedTree.interpret(vec)
     }
   }
