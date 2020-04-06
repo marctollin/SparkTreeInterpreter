@@ -68,7 +68,7 @@ object DressedTree {
       }
     }
 
-    val paths = buildPath(Array(), topNode).map(_.sorted.reverse)
+    val paths = buildPath(Array(), topNode).map(_.reverse)
     DressedTree.arrayprint(paths)
 
     val contributions: NodeContributions = paths.flatMap(path => {

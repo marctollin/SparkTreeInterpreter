@@ -16,6 +16,7 @@ import org.apache.spark.ml.classification.DecisionTreeClassificationModel
 import org.apache.spark.ml.regression.DecisionTreeRegressor
 import org.apache.spark.ml.regression.DecisionTreeRegressionModel
 import org.apache.spark.sql.{Dataset, Row}
+import treeinterpreter.utils.IndicesToFeatures
 
 class InterpTest extends FunSuite with SharedSparkSession {
   def prepareRegressorData(spark: SparkSession): (Dataset[Row], Dataset[Row]) = {
@@ -92,7 +93,7 @@ class InterpTest extends FunSuite with SharedSparkSession {
 
     interpDataset.take(5).foreach(println)
     println(rfModel.featureImportances)
-    println(trainingData.schema("features").metadata.getMetadata("ml_attr").getMetadata("attrs"))
+    println(IndicesToFeatures(trainingData))
   }
 
   test("Random Forest Classifier Test") {
@@ -160,9 +161,13 @@ class InterpTest extends FunSuite with SharedSparkSession {
 
     val interpDataset = Interp.interpretModelDt(spark, rfModel, testData)
 
-    interpDataset.take(5).foreach(println)
+    val contributions = interpDataset.take(5).map(_.contributions)
     println(rfModel.featureImportances)
-    println(trainingData.schema("features").metadata.getMetadata("ml_attr").getMetadata("attrs"))
+    val idxToFeature = IndicesToFeatures(trainingData)
+    val toSee = contributions.map(_.toSeq.map {
+      case (f, v) => (f.map(k => idxToFeature.apply(k.toLong)), v)
+    })
+    println(toSee.mkString(" :: "))
   }
 }
 
