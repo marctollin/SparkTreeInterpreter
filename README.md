@@ -8,15 +8,16 @@ Free software: BSD license
 
 Dependencies
 ------------
-Spark 1.4.1+
+Spark 2.3
 
 
 Usage and Tests
 -----
-Given a trained RandomForestModel/DecisionTreeModel and an RDD[LabeledPoint], we have
+Given a trained RandomForestModel/DecisionTreeModel and an Dataset[Row], we have
 
 ```
-Interp.interpretModel(model, trainingData)
+Interp.interpretModelRf(model, trainingData)
+Interp.interpretModelDt(model, trainingData)
 ```
 yields
 ``` 
