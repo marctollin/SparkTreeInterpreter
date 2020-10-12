@@ -1,5 +1,8 @@
 target
 out
+/.bloop
+/.metals
+/project/metals.sbt
 /.idea/workspace.xml
 /.idea/vcs.xml
 /.idea/libraries
