@@ -35,11 +35,7 @@ case class DressedTree[M <: DecisionTreeModel with PredictionModel[Vector, _] wi
 
 object DressedTree {
 
-  type Feature = Option[Int]
-
-  type NodeContributions = Map[NodeID, Map[Feature, Double]]
-
-  def arrayprint[A](x: Array[A]): Unit = println(x.deep.mkString("\n"))
+  type NodeContributions = Map[NodeID, Map[NodeID, Double]]
 
   def trainInterpreter[M <: DecisionTreeModel with PredictionModel[Vector, _] with PredictorParams](model: M): DressedTree[M] = {
     val topNode = model.rootNode
@@ -48,13 +44,12 @@ object DressedTree {
       case _: DecisionTreeClassificationModel => ClassificationNode(node)
       case _: DecisionTreeRegressionModel => RegressionNode(node)
     }
+
     type Path = Array[TreeNode]
 
     type PathBundle = Array[Path]
 
     val bias = topNode.value
-
-    var Paths: PathBundle = Array()
 
     def buildPath(paths: Path, node: Node): PathBundle = {
       val treeNode = nodeType(node)
@@ -69,18 +64,17 @@ object DressedTree {
     }
 
     val paths = buildPath(Array(), topNode).map(_.reverse)
-    DressedTree.arrayprint(paths)
 
     val contributions: NodeContributions = paths.flatMap(path => {
       val contribMap = path
         .zip(path.tail)
         .flatMap {
           case (currentNode, prevNode) =>
-            Map(prevNode.feature -> {
+            Map(prevNode.nodeID -> {
               currentNode.value - prevNode.value
             })
         }
-        .foldLeft(Map.empty[Feature, Double])(_ + _)
+        .foldLeft(Map.empty[NodeID, Double])(_ + _)
 
       val leafID = path.head.nodeID
       Map(leafID -> contribMap)

@@ -9,6 +9,7 @@ import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.Dataset
 import org.apache.spark.ml.PredictorParams
 import org.apache.spark.ml.treeinterpreter.DressedTree._
+import org.apache.spark.ml.treeinterpreter.TreeNode.NodeID
 import org.apache.spark.sql.{functions => F}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.Row
@@ -17,7 +18,7 @@ import org.apache.spark.ml.linalg.DenseVector
 
 case class Interp(bias: Double,
                   prediction: Double,
-                  contributions: Map[Feature, Double],
+                  contributions: Map[NodeID, Double],
                   treeCount: Double = 1.0,
                   checksum: Double = 0.0) {
   override def toString(): String = {
@@ -33,7 +34,7 @@ case class Interp(bias: Double,
 object Interp {
 
   class InterpMonoid extends Monoid[Interp] {
-    def plus(l: Interp, r: Interp) = new Interp(
+    def plus(l: Interp, r: Interp) = Interp(
       l.bias + r.bias,
       l.prediction + r.prediction,
       l.contributions + r.contributions,
@@ -55,25 +56,19 @@ object Interp {
       .select(F.col(model.getFeaturesCol))
       .map { row =>
         val vec = row.getAs[DenseVector](model.getFeaturesCol)
-        trees.map {
-          case dressedTree =>
-            dressedTree.interpret(vec)
+        trees.map { dressedTree =>
+          dressedTree.interpret(vec)
         }
       }
-
     val aggResult: Dataset[Interp] = result
       .map(_.reduce(_ + _))
-      .map { case interp => {
+      .map { interp =>
         import interp._
         val (avgBias, avgPrediction) = (bias / treeCount, prediction / treeCount)
-
-        val avgContributions = contributions.mapValues(_/treeCount).map(identity)
-
+        val avgContributions = contributions.mapValues(_/treeCount)
         val checkSum = avgBias + avgContributions.values.sum
-
         Interp(avgBias, avgPrediction, avgContributions, treeCount, checkSum)
       }
-    }
     aggResult
   }
 
@@ -82,11 +77,16 @@ object Interp {
                      testSet: Dataset[Row]): Dataset[Interp] = {
     import spark.implicits._
     val dressedTree = DressedTree.trainInterpreter(model)
-    testSet
-    .select(F.col(model.getFeaturesCol))
-    .map { row =>
-      val vec = row.getAs[DenseVector](model.getFeaturesCol)
-      dressedTree.interpret(vec)
-    }
+    val result = testSet
+      .select(F.col(model.getFeaturesCol))
+      .map { row =>
+        val vec = row.getAs[DenseVector](model.getFeaturesCol)
+        dressedTree.interpret(vec)
+      } map { interp =>
+        import interp._
+        val checkSum = interp.bias + interp.contributions.values.sum
+        Interp(interp.bias, interp.prediction, interp.contributions, interp.treeCount, checkSum)
+      }
+    result
   }
 }

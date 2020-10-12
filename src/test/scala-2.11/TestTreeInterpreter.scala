@@ -39,6 +39,7 @@ class InterpTest extends FunSuite with SharedSparkSession {
 
     featuredData.printSchema()
     featuredData.show(5)
+
     val splits = featuredData.randomSplit(Array(0.2, 0.8), seed = 5)
     val (trainingData, testData) = (splits(0), splits(1))
     (trainingData, testData)
@@ -65,6 +66,7 @@ class InterpTest extends FunSuite with SharedSparkSession {
 
     featuredData.printSchema()
     featuredData.show(5)
+  
     val splits = featuredData.randomSplit(Array(0.2, 0.8), seed = 5)
     val (trainingData, testData) = (splits(0), splits(1))
     (trainingData, testData)
@@ -87,13 +89,13 @@ class InterpTest extends FunSuite with SharedSparkSession {
       .setFeatureSubsetStrategy(featureSubsetStrategy)
       .setNumTrees(numTrees)
     
-    val rfModel : RandomForestRegressionModel = rf.fit(trainingData)
+    val model : RandomForestRegressionModel = rf.fit(trainingData)
 
-    val interpDataset = Interp.interpretModelTf(spark, rfModel, testData)
+    val interpDataset = Interp.interpretModelTf(spark, model, testData)
 
     interpDataset.take(5).foreach(println)
-    println(rfModel.featureImportances)
-    println(IndicesToFeatures(trainingData))
+    println(s"features importance: ${model.featureImportances}")
+    println(s"indices to features ${IndicesToFeatures(trainingData)}")
   }
 
   test("Random Forest Classifier Test") {
@@ -113,13 +115,13 @@ class InterpTest extends FunSuite with SharedSparkSession {
       .setFeatureSubsetStrategy(featureSubsetStrategy)
       .setNumTrees(numTrees)
     
-    val rfModel : RandomForestClassificationModel = rf.fit(trainingData)
-
-    val interpDataset = Interp.interpretModelTf(spark, rfModel, testData)
+    val model : RandomForestClassificationModel = rf.fit(trainingData)
+    model.transform(testData).show(5)
+    val interpDataset = Interp.interpretModelTf(spark, model, testData)
 
     interpDataset.take(5).foreach(println)
-    println(rfModel.featureImportances)
-    println(trainingData.schema("features").metadata.getMetadata("ml_attr").getMetadata("attrs"))
+    println(s"features importance: ${model.featureImportances}")
+    println(s"indices to features ${trainingData.schema("features").metadata.getMetadata("ml_attr").getMetadata("attrs")}")
   }
 
   test("Decision Tree Classifier Test") {
@@ -129,19 +131,19 @@ class InterpTest extends FunSuite with SharedSparkSession {
     val maxBins = 32
     val classimpurity = "gini"
 
-    val rf = new DecisionTreeClassifier()
+    val dt = new DecisionTreeClassifier()
       .setSeed(1234)
       .setImpurity(classimpurity)
       .setMaxBins(maxBins)
       .setMaxDepth(maxDepth)
     
-    val rfModel : DecisionTreeClassificationModel = rf.fit(trainingData)
-
-    val interpDataset = Interp.interpretModelDt(spark, rfModel, testData)
+    val model : DecisionTreeClassificationModel = dt.fit(trainingData)
+    model.transform(testData).show(5)
+    val interpDataset = Interp.interpretModelDt(spark, model, testData)
 
     interpDataset.take(5).foreach(println)
-    println(rfModel.featureImportances)
-    println(trainingData.schema("features").metadata.getMetadata("ml_attr").getMetadata("attrs"))
+    println(s"features importance: ${model.featureImportances}")
+    println(s"indices to features ${trainingData.schema("features").metadata.getMetadata("ml_attr").getMetadata("attrs")}")
   }
 
   test("Decision Tree Regression Test") {
@@ -151,23 +153,18 @@ class InterpTest extends FunSuite with SharedSparkSession {
     val maxBins = 32
     val classimpurity = "variance"
 
-    val rf = new DecisionTreeRegressor()
+    val dt = new DecisionTreeRegressor()
       .setSeed(1234)
       .setImpurity(classimpurity)
       .setMaxBins(maxBins)
       .setMaxDepth(maxDepth)
     
-    val rfModel : DecisionTreeRegressionModel = rf.fit(trainingData)
+    val model : DecisionTreeRegressionModel = dt.fit(trainingData)
 
-    val interpDataset = Interp.interpretModelDt(spark, rfModel, testData)
+    val interpDataset = Interp.interpretModelDt(spark, model, testData)
 
-    val contributions = interpDataset.take(5).map(_.contributions)
-    println(rfModel.featureImportances)
-    val idxToFeature = IndicesToFeatures(trainingData)
-    val toSee = contributions.map(_.toSeq.map {
-      case (f, v) => (f.map(k => idxToFeature.apply(k.toLong)), v)
-    })
-    println(toSee.mkString(" :: "))
+    println(s"features importance: ${model.featureImportances}")
+    interpDataset.take(5).foreach(println)
   }
 }
 

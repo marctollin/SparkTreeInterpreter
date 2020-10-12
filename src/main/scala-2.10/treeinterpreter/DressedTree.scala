@@ -32,8 +32,6 @@ object DressedTree {
 
   type NodeContributions = Map[NodeID, Map[Feature, Double]]
 
-  def arrayprint[A](x: Array[A]): Unit = println(x.deep.mkString("\n"))
-
   def trainInterpreter(model: DecisionTreeModel): DressedTree = {
     val topNode = model.topNode
 
@@ -61,7 +59,6 @@ object DressedTree {
     }
 
     val paths = buildPath(Array(), topNode).map(_.sorted.reverse)
-    DressedTree.arrayprint(paths)
 
     val contributions: NodeContributions = paths.flatMap(path => {
 

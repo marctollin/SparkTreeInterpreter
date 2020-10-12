@@ -7,7 +7,9 @@ import org.apache.spark.ml.tree.InternalNode
 
 object TreeNode {
 
-  type NodeID = String
+  type NodeID = (Int, Double)
+
+  type Feature = Option[(Int, Double)]
 
   trait SimplifiedNode {
     def nodeID: NodeID
@@ -16,20 +18,18 @@ object TreeNode {
 
     def value: Double
 
-    def feature: Option[Int]
+    def feature: Feature
   }
 
-  abstract class TreeNode(node: Node) extends SimplifiedNode with Ordered[TreeNode] {
-    override def toString(): String = Array(nodeID, value, feature).mkString("||", ",", "||")
+  abstract class TreeNode(node: Node) extends SimplifiedNode {
+    override def toString(): String = Array(nodeID, value).mkString("||", ",", "||")
 
-    def compare(that: TreeNode) =  this.nodeID compare that.nodeID
-
-    val nodeID: NodeID = node.toString()
-
-    val feature: Option[Int] = node match {
-      case node: InternalNode => Some(node.split.featureIndex)
-      case _: LeafNode => None
+    val feature: Feature = node match {
+      case node: InternalNode => Some(node.split.featureIndex, node.impurity)
+      case _: LeafNode => Some(-1, node.impurity)
     }
+
+    val nodeID: NodeID = feature.get
 
     def value: Double
 
@@ -51,6 +51,6 @@ object TreeNode {
   }
 
   case class RegressionNode(node: Node) extends TreeNode(node) {
-    override def value: Double = node.prediction
+    override def value = node.prediction
   }
 }
