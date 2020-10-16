@@ -13,7 +13,6 @@ import org.apache.spark.ml.treeinterpreter.TreeNode.NodeID
 import org.apache.spark.sql.{functions => F}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.Row
-import org.apache.spark.ml.linalg.DenseVector
 
 
 case class Interp(bias: Double,
@@ -55,7 +54,7 @@ object Interp {
     val result = testSet
       .select(F.col(model.getFeaturesCol))
       .map { row =>
-        val vec = row.getAs[DenseVector](model.getFeaturesCol)
+        val vec = row.getAs[Vector](model.getFeaturesCol)
         trees.map { dressedTree =>
           dressedTree.interpret(vec)
         }
@@ -80,7 +79,7 @@ object Interp {
     val result = testSet
       .select(F.col(model.getFeaturesCol))
       .map { row =>
-        val vec = row.getAs[DenseVector](model.getFeaturesCol)
+        val vec = row.getAs[Vector](model.getFeaturesCol)
         dressedTree.interpret(vec)
       } map { interp =>
         import interp._
