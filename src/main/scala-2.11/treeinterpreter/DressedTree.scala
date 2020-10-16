@@ -24,7 +24,14 @@ case class DressedTree[M <: DecisionTreeModel with PredictionModel[Vector, _] wi
 
   def predictLeaf(point: Vector): Interp = {
     val leaf = predictLeafID(point)
-    val prediction = model.predict(point)
+    // from 2.4.0 use just predict(FeatureType)
+    def crackProtectedPredict(model: M, point: Vector): Double = {
+      val modelClass = model.getClass
+      val predictMethod = modelClass.getDeclaredMethod("predict", classOf[Vector])
+      predictMethod.setAccessible(true)
+      predictMethod.invoke(model, point).asInstanceOf[Double]
+    }
+    val prediction = crackProtectedPredict(model, point)
     val contribution = contributionMap(leaf)
     Interp(bias, prediction, contribution)
   }
