@@ -84,7 +84,9 @@ object DressedTree {
         .foldLeft(Map.empty[NodeID, Double])(_ + _)
 
       val leafID = path.head.nodeID
-      Map(leafID -> contribMap)
+      val k = Map(leafID -> contribMap)
+      //println(k.mkString(":::"))
+      k
     }).toMap
 
     DressedTree(model, bias, contributions)

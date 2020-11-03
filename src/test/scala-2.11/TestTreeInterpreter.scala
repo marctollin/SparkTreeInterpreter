@@ -77,7 +77,7 @@ class InterpTest extends FunSuite with SharedSparkSession {
 
     val numTrees = 10
     val featureSubsetStrategy = "auto"
-    val maxDepth = 2
+    val maxDepth = 5
     val maxBins = 32
     val classimpurity = "variance"
 
@@ -90,10 +90,11 @@ class InterpTest extends FunSuite with SharedSparkSession {
       .setNumTrees(numTrees)
     
     val model : RandomForestRegressionModel = rf.fit(trainingData)
-
+    val predicted = model.transform(testData)
     val interpDataset = Interp.interpretModelTf(spark, model, testData)
 
     interpDataset.take(5).foreach(println)
+    predicted.take(5).foreach(println)
     println(s"features importance: ${model.featureImportances}")
     println(s"indices to features ${IndicesToFeatures(trainingData)}")
   }
@@ -103,7 +104,7 @@ class InterpTest extends FunSuite with SharedSparkSession {
 
     val numTrees = 10
     val featureSubsetStrategy = "auto"
-    val maxDepth = 2
+    val maxDepth = 5
     val maxBins = 32
     val classimpurity = "gini"
 
@@ -127,7 +128,7 @@ class InterpTest extends FunSuite with SharedSparkSession {
   test("Decision Tree Classifier Test") {
     val (trainingData, testData) = prepareClassifierData(spark)
 
-    val maxDepth = 2
+    val maxDepth = 5
     val maxBins = 32
     val classimpurity = "gini"
 
@@ -141,7 +142,7 @@ class InterpTest extends FunSuite with SharedSparkSession {
     model.transform(testData).show(5)
     val interpDataset = Interp.interpretModelDt(spark, model, testData)
 
-    interpDataset.take(5).foreach(println)
+    interpDataset.take(10).foreach(println)
     println(s"features importance: ${model.featureImportances}")
     println(s"indices to features ${trainingData.schema("features").metadata.getMetadata("ml_attr").getMetadata("attrs")}")
   }
@@ -149,7 +150,7 @@ class InterpTest extends FunSuite with SharedSparkSession {
   test("Decision Tree Regression Test") {
     val (trainingData, testData) = prepareRegressorData(spark)
 
-    val maxDepth = 2
+    val maxDepth = 5
     val maxBins = 32
     val classimpurity = "variance"
 
@@ -164,7 +165,7 @@ class InterpTest extends FunSuite with SharedSparkSession {
     val interpDataset = Interp.interpretModelDt(spark, model, testData)
 
     println(s"features importance: ${model.featureImportances}")
-    interpDataset.take(5).foreach(println)
+    interpDataset.take(20).foreach(println)
   }
 }
 
